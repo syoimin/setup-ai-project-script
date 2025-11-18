@@ -63,6 +63,8 @@ services:
       context: ./backend
       dockerfile: ../dockerfiles/Dockerfile.php82
     container_name: laravel-app
+    ports:
+      - "8080:9000"
     working_dir: /var/www
     volumes:
       - ./backend:/var/www
