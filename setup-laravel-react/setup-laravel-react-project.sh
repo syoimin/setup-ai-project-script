@@ -33,6 +33,18 @@ fi
 echo "✅ 前提条件OK"
 echo ""
 
+# 0. ホストに www-data をユーザとグループを作成
+echo "🔐 Step 0/10: www-data のユーザとグループを作成"
+# www-dataグループを作成
+if [ ! $(getent group www-data) ]; then
+    addgroup -g 82 www-data  # 82は標準的なwww-dataグループID
+fi
+
+# www-dataユーザーを作成
+if [ ! $(getent passwd www-data) ]; then
+    adduser -D -u 82 -G www-data www-data
+fi
+
 # 1. プロジェクトディレクトリ作成
 echo "📁 Step 1/10: プロジェクトディレクトリを作成中..."
 mkdir -p $PROJECT_NAME
@@ -155,6 +167,11 @@ echo ""
 echo "📦 Step 5/10: Laravel依存関係をインストール中（Docker内）..."
 docker run --rm -v $(pwd)/backend:/app composer:latest require bref/bref bref/laravel-bridge --ignore-platform-reqs
 docker run --rm -v $(pwd)/backend:/app composer:latest require --dev laravel/pint phpstan/phpstan nunomaduro/larastan --ignore-platform-reqs
+
+# 権限設定
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
 
 # ディレクトリ構造作成
 mkdir -p backend/app/{Services,Repositories,Exceptions}
